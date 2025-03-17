@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "IV0F7VHaOiEGEG9XSUids2Mlfnqx9ulT+asuqkS82qg=",
+  "Source": "HealthFitnessAPI",
+  "BasePath": "_content/HealthFitnessAPI",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
