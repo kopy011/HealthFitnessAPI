@@ -1,7 +1,10 @@
 using FluentValidation;
 namespace HealthFitnessAPI.Model.Dtos.User
 {
-    public class CreateUserDto : AbstractUserDto { }
+    public class CreateUserDto : AbstractUserDto
+    {
+        public string Gender { get; set; }
+    }
 
     public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
     {
@@ -9,7 +12,7 @@ namespace HealthFitnessAPI.Model.Dtos.User
         {
             RuleFor(u => u.FullName).NotEmpty();
             RuleFor(u => u.Nickname).NotEmpty();
-            RuleFor(u => u.Gender).IsInEnum();
+            RuleFor(u => u.Gender).NotEmpty();
         }
     }
 }

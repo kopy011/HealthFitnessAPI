@@ -157,3 +157,4 @@ C:\Repos\health_fitness\HealthFitnessAPI\HealthFitnessAPI\obj\Debug\net9.0\refin
 C:\Repos\health_fitness\HealthFitnessAPI\HealthFitnessAPI\obj\Debug\net9.0\HealthFitnessAPI.pdb
 C:\Repos\health_fitness\HealthFitnessAPI\HealthFitnessAPI\obj\Debug\net9.0\HealthFitnessAPI.genruntimeconfig.cache
 C:\Repos\health_fitness\HealthFitnessAPI\HealthFitnessAPI\obj\Debug\net9.0\ref\HealthFitnessAPI.dll
+C:\Repos\health_fitness\HealthFitnessAPI\HealthFitnessAPI\obj\Debug\net9.0\HealthFitnessAPI.sourcelink.json

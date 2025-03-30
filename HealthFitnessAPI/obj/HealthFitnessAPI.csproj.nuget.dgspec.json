@@ -25,7 +25,8 @@
           "net9.0"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://git.pemik.hu/api/v4/projects/298/packages/nuget/index.json": {}
         },
         "frameworks": {
           "net9.0": {

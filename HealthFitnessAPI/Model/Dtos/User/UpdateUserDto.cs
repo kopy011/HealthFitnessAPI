@@ -4,6 +4,7 @@ namespace HealthFitnessAPI.Model.Dtos.User
     public class UpdateUserDto : AbstractUserDto
     {
         public int Id { get; set; }
+        public string Gender { get; set; }
     }
 
     public class UpdateUserDtoValidator : AbstractValidator<UpdateUserDto>
@@ -13,7 +14,7 @@ namespace HealthFitnessAPI.Model.Dtos.User
             RuleFor(u => u.Id).NotEmpty();
             RuleFor(u => u.FullName).NotEmpty();
             RuleFor(u => u.Nickname).NotEmpty();
-            RuleFor(u => u.Gender).IsInEnum();
+            RuleFor(u => u.Gender).NotEmpty();
         }
     }
 }
