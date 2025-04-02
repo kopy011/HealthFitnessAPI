@@ -4,7 +4,6 @@ namespace HealthFitnessAPI.Model.Dtos.User
     public class UpdateUserDto : AbstractUserDto
     {
         public int Id { get; set; }
-        public string Gender { get; set; }
     }
 
     public class UpdateUserDtoValidator : AbstractValidator<UpdateUserDto>

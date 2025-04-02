@@ -7,7 +7,7 @@ namespace HealthFitnessAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class UserAchievementAchievementController(IUserAchievementService userAchievementService, IMapper mapper) : ControllerBase
+    public class UserAchievementController(IUserAchievementService userAchievementService, IMapper mapper) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetAll()

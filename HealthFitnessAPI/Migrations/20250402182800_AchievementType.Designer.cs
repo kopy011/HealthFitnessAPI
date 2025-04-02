@@ -2,6 +2,7 @@
 using HealthFitnessAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthFitnessAPI.Migrations
 {
     [DbContext(typeof(HealthFitnessDbContext))]
-    partial class HealthFitnessDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250402182800_AchievementType")]
+    partial class AchievementType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");

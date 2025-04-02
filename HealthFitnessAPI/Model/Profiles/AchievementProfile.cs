@@ -1,5 +1,6 @@
 using AutoMapper;
 using HealthFitnessAPI.Entities;
+using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.Model.Dtos.Achievement;
 namespace HealthFitnessAPI.Model.Profiles
 {
@@ -7,9 +8,12 @@ namespace HealthFitnessAPI.Model.Profiles
     {
         public AchievementProfile()
         {
-            CreateMap<CreateAchievementDto, Achievement>();
-            CreateMap<UpdateAchievementDto, Achievement>();
-            CreateMap<Achievement, AchievementResultDto>();
+            CreateMap<CreateAchievementDto, Achievement>()
+                .ForMember(dest => dest.AchievementType, opt => opt.MapFrom(src => EnumHelper.GetAchievementTypeEnumValue(src.AchievementType)));
+            CreateMap<UpdateAchievementDto, Achievement>()
+                .ForMember(dest => dest.AchievementType, opt => opt.MapFrom(src => EnumHelper.GetAchievementTypeEnumValue(src.AchievementType)));
+            CreateMap<Achievement, AchievementResultDto>()
+                .ForMember(dest => dest.AchievementType, opt => opt.MapFrom(src => EnumHelper.GetAchievementTypeDisplayValue(src.AchievementType)));
         }
     }
 }

@@ -1,10 +1,7 @@
 using FluentValidation;
 namespace HealthFitnessAPI.Model.Dtos.User
 {
-    public class CreateUserDto : AbstractUserDto
-    {
-        public string Gender { get; set; }
-    }
+    public class CreateUserDto : AbstractUserDto { }
 
     public class CreateUserDtoValidator : AbstractValidator<CreateUserDto>
     {
