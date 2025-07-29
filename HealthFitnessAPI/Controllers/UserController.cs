@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using AutoMapper;
 using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Model.Dtos.User;
@@ -7,8 +9,16 @@ namespace HealthFitnessAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class UserController(IUserService userService, IMapper mapper) : ControllerBase
+    public class UserController(IUserService userService, IMapper mapper, IEmailService emailService) : ControllerBase
     {
+        [HttpPost]
+        public async Task<IActionResult> TestEmail()
+        {
+
+            await emailService.SendEmailAsync("lobof73360@kloudis.com", "TEST", "THIS IS A TEST EMAIL");
+            return Ok();
+        }
+        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

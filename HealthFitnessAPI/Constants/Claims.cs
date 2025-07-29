@@ -1,6 +1,6 @@
 namespace HealthFitnessAPI.Constants;
 
-public class Claims
+public  static class Claims
 {
-    
+    public const string Role = "healthFitnessAPI::role";
 }

@@ -38,7 +38,7 @@ namespace HealthFitnessAPI.UnitOfWork
 
         public DbSet<TEntity> GetDbSet<TEntity>() where TEntity : AbstractEntity
         {
-            throw new NotImplementedException();
+            return context.Set<TEntity>();
         }
 
         public int SaveChanges()
