@@ -1,4 +1,3 @@
-using System.Data;
 using FluentValidation;
 
 namespace HealthFitnessAPI.Model.Dtos.Auth
