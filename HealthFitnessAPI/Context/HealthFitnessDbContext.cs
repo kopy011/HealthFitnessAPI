@@ -15,6 +15,7 @@ namespace HealthFitnessAPI.Context
             modelBuilder.Entity<User>().HasQueryFilter(u => !u.Deleted).Property(u => u.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<Achievement>().HasQueryFilter(a => !a.Deleted).Property(a => a.Deleted).HasDefaultValue(false);
             modelBuilder.Entity<UserAchievement>().HasQueryFilter(u => !u.Deleted).Property(u => u.Deleted).HasDefaultValue(false);
+            modelBuilder.Entity<RefreshToken>().HasQueryFilter(u => !u.Deleted).Property(u => u.Deleted).HasDefaultValue(false);
         }
     }
 }

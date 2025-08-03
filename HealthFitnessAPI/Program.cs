@@ -2,12 +2,14 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using HealthFitnessAPI.Context;
+using HealthFitnessAPI.ScheduledJobs;
 using HealthFitnessAPI.Services;
 using HealthFitnessAPI.Services.Init;
 using HealthFitnessAPI.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
 using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +36,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
         ValidAudience = builder.Configuration["JwtConfig:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:Key"]!)),
+        ClockSkew = TimeSpan.Zero
     };
 });
 builder.Services.AddAuthorization();
@@ -52,13 +55,30 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IUserInitService, UserInitService>();
 
+builder.Services.AddQuartz(options =>
+{
+    var jobKey = new JobKey("DeleteExpiredRefreshTokensJob");
+    options.AddJob<DeleteExpiredRefreshTokensJob>(opts => opts
+        .WithIdentity(jobKey)
+        .WithDescription("Says Hello every 10 seconds"));
+
+    options.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("DeleteExpiredRefreshTokensJob-trigger")
+        .WithCronSchedule("0 0 * * * ?")
+        .WithDescription("Runs every hour, every day"));
+});
+
+builder.Services.AddQuartzHostedService(options =>
+    options.WaitForJobsToComplete = true);
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    
+
     var ctx = scope.ServiceProvider.GetRequiredService<HealthFitnessDbContext>();
     ctx.Database.Migrate();
 }

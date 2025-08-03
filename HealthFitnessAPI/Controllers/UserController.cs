@@ -1,24 +1,16 @@
-using System.Net;
-using System.Net.Mail;
 using AutoMapper;
 using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Model.Dtos.User;
 using HealthFitnessAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace HealthFitnessAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class UserController(IUserService userService, IMapper mapper, IEmailService emailService) : ControllerBase
+    public class UserController(IUserService userService, IMapper mapper) : ControllerBase
     {
-        [HttpPost]
-        public async Task<IActionResult> TestEmail()
-        {
-
-            await emailService.SendEmailAsync("lobof73360@kloudis.com", "TEST", "THIS IS A TEST EMAIL");
-            return Ok();
-        }
-        
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

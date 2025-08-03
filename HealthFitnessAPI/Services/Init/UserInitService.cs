@@ -21,11 +21,12 @@ public class UserInitService(IUnitOfWork unitOfWork, IConfiguration configuratio
         
         var user = await unitOfWork.GetRepository<User>().CreateAsync(new User
         {
+            Username = configuration["DefaultAdminUser:Username"]!,
             Email = configuration["DefaultAdminUser:Email"]!,
             Password = Helpers.Hash.HashPassword(configuration["DefaultAdminUser:Password"]!),
             Role = Constants.Roles.Admin,
             FullName = "Administrator",
-            Nickname = "Admin"
+            DisplayName = "Admin"
         });
         await unitOfWork.SaveChangesAsync();
     }
