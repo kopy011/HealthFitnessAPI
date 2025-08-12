@@ -5,6 +5,7 @@ namespace HealthFitnessAPI.Repository;
 
 public interface IRepository<T> where T : AbstractEntity
 {
+    public IQueryable<T> GetAllAsQueryable(bool track = false);
     public Task<List<T>> GetAllAsync(bool track = false);
     public Task<T> GetByIdAsync(int id, bool track = false);
     public Task<T> CreateAsync(T entity);
@@ -17,6 +18,11 @@ public class Repository<T>(DbContext context) : IRepository<T>
     where T : AbstractEntity
 {
     private readonly DbSet<T> _dbSet = context.Set<T>();
+
+    public IQueryable<T> GetAllAsQueryable(bool track = false)
+    {
+        return track ? _dbSet.AsTracking() : _dbSet.AsQueryable();
+    }
 
     public async Task<List<T>> GetAllAsync(bool track = false)
     {

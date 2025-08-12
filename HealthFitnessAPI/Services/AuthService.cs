@@ -22,7 +22,8 @@ public class AuthService(IUnitOfWork unitOfWork, IConfiguration configuration) :
     public async Task<LoginResponseDto> Login(LoginDto loginDto)
     {
         var user = await unitOfWork.GetDbSet<User>().FirstOrDefaultAsync(u => u.Username == loginDto.Username);
-        if (user is null || !Hash.VerifyPassword(loginDto.Password!, user.Password!)) throw new Exception("Invalid credentials!");
+        if (user is null || !Hash.VerifyPassword(loginDto.Password!, user.Password!))
+            throw new Exception("Invalid credentials!");
 
         return await GenerateJwtToken(user);
     }
@@ -56,19 +57,22 @@ public class AuthService(IUnitOfWork unitOfWork, IConfiguration configuration) :
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity([
-        new Claim(ClaimTypes.Name, user.Username!), new Claim(ClaimTypes.Role, user.Role!)]),
+                new Claim(ClaimTypes.Name, user.Username!),
+                new Claim(ClaimTypes.Role, user.Role!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            ]),
             Expires = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("JwtConfig:ExpiresInMins")),
             Issuer = configuration.GetValue<string>("JwtConfig:Issuer"),
             Audience = configuration.GetValue<string>("JwtConfig:Audience"),
             SigningCredentials =
-        new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetValue<string>("JwtConfig:Key")!)),
-            SecurityAlgorithms.HmacSha256Signature)
+                new SigningCredentials(
+                    new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetValue<string>("JwtConfig:Key")!)),
+                    SecurityAlgorithms.HmacSha256Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-        return new LoginResponseDto()
+        return new LoginResponseDto
         {
             AccessToken = tokenHandler.WriteToken(securityToken),
             RefreshToken = await GenerateRefreshToken(user.Id)

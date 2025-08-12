@@ -2,22 +2,26 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using HealthFitnessAPI.Context;
+using HealthFitnessAPI.Middlewares;
 using HealthFitnessAPI.ScheduledJobs;
 using HealthFitnessAPI.Services;
 using HealthFitnessAPI.Services.Init;
 using HealthFitnessAPI.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<HealthFitnessDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<HealthFitnessDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -28,7 +32,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
@@ -43,9 +47,12 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()).AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies())
+    .AddFluentValidationAutoValidation();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<HealthFitnessDbContext>>();
+
+builder.Services.AddScoped<UserIdMiddleware>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
@@ -78,7 +85,6 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-
     var ctx = scope.ServiceProvider.GetRequiredService<HealthFitnessDbContext>();
     ctx.Database.Migrate();
 }
@@ -105,7 +111,7 @@ app.UseExceptionHandler(errorApp =>
         context.Response.ContentType = "application/json";
 
         var exceptionHandlerPathFeature =
-            context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+            context.Features.Get<IExceptionHandlerPathFeature>();
 
         var error = new
         {
@@ -124,5 +130,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
+
+app.UseMiddleware<UserIdMiddleware>();
 
 app.Run();
