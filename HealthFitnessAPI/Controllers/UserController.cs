@@ -1,6 +1,8 @@
 using AutoMapper;
 using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Entities;
+using HealthFitnessAPI.Extensions;
+using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.Model.Dtos.User;
 using HealthFitnessAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +12,10 @@ namespace HealthFitnessAPI.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class UserController(IUserService userService, IMapper mapper) : ControllerBase
 {
-    [Authorize(Roles = $"{Roles.Admin}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -60,7 +62,7 @@ public class UserController(IUserService userService, IMapper mapper) : Controll
     }
 
     [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
-    [HttpPut]
+    [HttpPut("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto user)
     {
         var result = await userService.ChangePassword(user);
@@ -80,5 +82,15 @@ public class UserController(IUserService userService, IMapper mapper) : Controll
         {
             return BadRequest(e.Message);
         }
+    }
+
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    [HttpPost("feed")]
+    public async Task<IActionResult> GetFeed([FromBody] GetFeedOptionsDto options)
+    {
+        var userId = HttpContext.GetUserIdOrThrow();
+        var result = await userService.GetFeed(userId, options.Pagination,
+            EnumHelper.GetFeedOrderByEnumValue(options.FeedOrderBy), options.QueryString);
+        return Ok(mapper.Map<List<UserAchievement>>(result));
     }
 }

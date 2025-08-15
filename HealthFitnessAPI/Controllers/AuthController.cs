@@ -1,31 +1,48 @@
+using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Model.Dtos.Auth;
 using HealthFitnessAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthFitnessAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        var token = await authService.Login(loginDto);
-        return Ok(token);
+        try
+        {
+            var token = await authService.Login(loginDto);
+            return Ok(token);
+        }
+        catch (Exception)
+        {
+            return Unauthorized();
+        }
     }
 
-    [HttpPost]
+    [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshDto refreshDto)
     {
-        var result = await authService.ValidateRefreshToken(refreshDto.Token!);
-        return Ok(result);
+        try
+        {
+            var result = await authService.ValidateRefreshToken(refreshDto.RefreshToken!);
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return Unauthorized();
+        }
     }
 
-    [HttpPost]
+    [HttpPost("logout")]
+    [Authorize(Roles = $"{Roles.User}, {Roles.Admin}")]
     public async Task<IActionResult> Revoke([FromBody] RefreshDto refreshDto)
     {
-        await authService.RevokeRefreshToken(refreshDto.Token!);
+        await authService.RevokeRefreshToken(refreshDto.RefreshToken!);
         return Ok();
     }
 }

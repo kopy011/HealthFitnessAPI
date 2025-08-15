@@ -1,4 +1,5 @@
 using System.Text;
+using AutoWrapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using HealthFitnessAPI.Context;
@@ -128,6 +129,8 @@ using (var scope = app.Services.CreateScope())
     var userInitService = scope.ServiceProvider.GetRequiredService<IUserInitService>();
     await userInitService.InitUsers();
 }
+
+app.UseApiResponseAndExceptionWrapper();
 
 app.MapControllers();
 

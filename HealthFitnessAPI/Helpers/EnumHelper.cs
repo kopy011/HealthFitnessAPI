@@ -79,4 +79,17 @@ public static class EnumHelper
             _ => throw new ArgumentOutOfRangeException(nameof(friendshipStatus), friendshipStatus, null)
         };
     }
+
+    public static FeedOrderBy GetFeedOrderByEnumValue(string feedOrderBy)
+    {
+        return feedOrderBy switch
+        {
+            "Trending" => FeedOrderBy.Trending,
+            "DateDescending" => FeedOrderBy.DateDescending,
+            "DateAscending" => FeedOrderBy.DateAscending,
+            "AToZ" => FeedOrderBy.AToZ,
+            "ZToA" => FeedOrderBy.ZToA,
+            _ => throw new ArgumentOutOfRangeException(nameof(feedOrderBy), feedOrderBy, null)
+        };
+    }
 }

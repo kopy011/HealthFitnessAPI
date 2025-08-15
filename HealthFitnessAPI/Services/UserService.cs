@@ -1,6 +1,8 @@
+using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Constants.Enums;
 using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Helpers;
+using HealthFitnessAPI.Model;
 using HealthFitnessAPI.Model.Dtos.User;
 using HealthFitnessAPI.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +19,24 @@ public interface IUserService : IAbstractService<User>
     Task RemoveFriend(int userId, int friendId);
     Task AcceptFriendRequest(int userId, int friendId);
     Task DeclineFriendRequest(int userId, int friendId);
+
+    Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
+        string? queryString = null);
 }
 
-public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
+public class UserService(
+    IUnitOfWork unitOfWork,
+    IAuthService authService,
+    IUserAchievementService userAchievementService)
     : AbstractService<User>(unitOfWork), IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+
+    public override async Task<List<User>> GetAll(bool track = false)
+    {
+        return await _unitOfWork.GetRepository<User>().GetAllAsQueryable(track).Where(u => u.Role == Roles.User)
+            .ToListAsync();
+    }
 
     public async Task<User> ChangePassword(ChangePasswordDto changePasswordDto)
     {
@@ -34,7 +48,7 @@ public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
         user.Password = Hash.HashPassword(changePasswordDto.NewPassword!);
         await _unitOfWork.SaveChangesAsync();
 
-        var refreshToken = await unitOfWork.GetDbSet<RefreshToken>().FirstOrDefaultAsync(rt => rt.UserId == user.Id);
+        var refreshToken = await _unitOfWork.GetDbSet<RefreshToken>().FirstOrDefaultAsync(rt => rt.UserId == user.Id);
         if (refreshToken != null) await authService.RevokeRefreshToken(refreshToken.Token!);
 
         return user;
@@ -78,7 +92,7 @@ public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
             LastUpdated = DateTime.UtcNow
         });
 
-        await unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task RemoveFriend(int userId, int friendId)
@@ -90,7 +104,7 @@ public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
         user.FriendsRecieved
             .RemoveAll(f => f.FriendId == userId && f.UserId == friendId && f.Status == FriendshipStatus.Accepted);
 
-        await unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task AcceptFriendRequest(int userId, int friendId)
@@ -100,7 +114,7 @@ public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
         if (friendShip == null) throw new Exception("Friendship not found!");
         friendShip.Status = FriendshipStatus.Accepted;
         friendShip.LastUpdated = DateTime.UtcNow;
-        await unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeclineFriendRequest(int userId, int friendId)
@@ -110,12 +124,41 @@ public class UserService(IUnitOfWork unitOfWork, IAuthService authService)
         user.FriendsRecieved
             .RemoveAll(f => f.UserId == friendId && f.FriendId == userId && f.Status == FriendshipStatus.Pending);
 
-        await unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
+        string? queryString = null)
+    {
+        var friends = await GetFriends(userId);
+        var userAchievements = (await userAchievementService.GetAllByUserIds(friends.Select(f => f.Id).ToList()))
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(queryString))
+        {
+            var lowerCaseQuery = queryString.ToLower();
+            userAchievements = userAchievements.Where(u =>
+                u.User!.Username!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase) ||
+                u.Achievement!.Name!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        userAchievements = orderBy switch
+        {
+            FeedOrderBy.Trending or FeedOrderBy.DateDescending => //TODO likeok implementálása
+                userAchievements.OrderByDescending(u => u.CreatedAt),
+            FeedOrderBy.DateAscending => userAchievements.OrderBy(u => u.CreatedAt),
+            FeedOrderBy.AToZ => userAchievements.OrderBy(u => u.User!.Username),
+            FeedOrderBy.ZToA => userAchievements.OrderByDescending(u => u.User!.Username),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return userAchievements.Skip((pagination.CurrentPage - 1) * pagination.PageSize).Take(pagination.PageSize)
+            .ToList();
     }
 
     private async Task<User> GetByIdWithInclude(int userId, bool track = false)
     {
-        var user = await unitOfWork.GetRepository<User>().GetAllAsQueryable(track)
+        var user = await _unitOfWork.GetRepository<User>().GetAllAsQueryable(track)
             .Include(u => u.FriendsSent)
             .ThenInclude(f => f.Friend)
             .Include(u => u.FriendsRecieved)
