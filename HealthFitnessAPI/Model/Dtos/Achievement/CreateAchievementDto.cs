@@ -1,14 +1,19 @@
 using FluentValidation;
-namespace HealthFitnessAPI.Model.Dtos.Achievement
-{
-    public class CreateAchievementDto : AbstractAchievementDto { }
+using HealthFitnessAPI.Model.Dtos.AchievementLevelThreshold;
 
-    public class CreateAchievementDtoValidator : AbstractValidator<CreateAchievementDto>
+namespace HealthFitnessAPI.Model.Dtos.Achievement;
+
+public class CreateAchievementDto : AbstractAchievementDto
+{
+    public List<AchievementLevelThresholdDto> AchievementLevelThresholds { get; set; }
+}
+
+public class CreateAchievementDtoValidator : AbstractValidator<CreateAchievementDto>
+{
+    public CreateAchievementDtoValidator()
     {
-        public CreateAchievementDtoValidator()
-        {
-            RuleFor(a => a.Name).NotEmpty();
-            RuleFor(a => a.Description).NotEmpty();
-        }
+        RuleFor(a => a.Description).NotEmpty();
+        RuleFor(a => a.AchievementLevelThresholds).NotEmpty();
+        RuleForEach(a => a.AchievementLevelThresholds).SetValidator(new AchievementLevelThresholdDtoValidator());
     }
 }

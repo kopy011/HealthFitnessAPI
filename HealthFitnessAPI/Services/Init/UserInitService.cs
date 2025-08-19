@@ -1,4 +1,6 @@
+using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Entities;
+using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,25 +11,27 @@ public interface IUserInitService
     public Task InitUsers();
 }
 
-public class UserInitService(IUnitOfWork unitOfWork, IConfiguration configuration): IUserInitService
+public class UserInitService(IUnitOfWork unitOfWork, IConfiguration configuration) : IUserInitService
 {
     public async Task InitUsers()
     {
-        var adminUser = await unitOfWork.GetDbSet<User>().FirstOrDefaultAsync(user => user.Email == configuration["DefaultAdminUser:Email"]);
-        
-        if(adminUser != null) return;
+        var adminUser = await unitOfWork.GetDbSet<User>()
+            .FirstOrDefaultAsync(user => user.Email == configuration["DefaultAdminUser:Email"]);
 
-        var pw = configuration.GetValue<string>("DefaultAdminUser:Password");
-        
-        var user = await unitOfWork.GetRepository<User>().CreateAsync(new User
+        if (adminUser != null) return;
+
+        configuration.GetValue<string>("DefaultAdminUser:Password");
+
+        await unitOfWork.GetRepository<User>().CreateAsync(new User
         {
             Username = configuration["DefaultAdminUser:Username"]!,
             Email = configuration["DefaultAdminUser:Email"]!,
-            Password = Helpers.Hash.HashPassword(configuration["DefaultAdminUser:Password"]!),
-            Role = Constants.Roles.Admin,
+            Password = Hash.HashPassword(configuration["DefaultAdminUser:Password"]!),
+            Role = Roles.Admin,
             FullName = "Administrator",
             DisplayName = "Admin"
         });
+
         await unitOfWork.SaveChangesAsync();
     }
 }

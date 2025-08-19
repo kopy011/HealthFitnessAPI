@@ -31,7 +31,7 @@ public class AbstractService<TEntity>(IUnitOfWork unitOfWork) : IAbstractService
         return await unitOfWork.GetRepository<TEntity>().GetByIdAsync(id, track);
     }
 
-    public async Task<TEntity> Update(TEntity entity)
+    public virtual async Task<TEntity> Update(TEntity entity)
     {
         var result = await unitOfWork.GetRepository<TEntity>().UpdateAsync(entity);
         await unitOfWork.SaveChangesAsync();

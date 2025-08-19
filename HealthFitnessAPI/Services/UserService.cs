@@ -139,7 +139,7 @@ public class UserService(
             var lowerCaseQuery = queryString.ToLower();
             userAchievements = userAchievements.Where(u =>
                 u.User!.Username!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase) ||
-                u.Achievement!.Name!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase));
+                u.Achievement!.Category!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase));
         }
 
         userAchievements = orderBy switch

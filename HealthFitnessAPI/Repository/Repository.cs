@@ -9,6 +9,7 @@ public interface IRepository<T> where T : AbstractEntity
     public Task<List<T>> GetAllAsync(bool track = false);
     public Task<T> GetByIdAsync(int id, bool track = false);
     public Task<T> CreateAsync(T entity);
+    public Task CreateRangeAsync(IEnumerable<T> entities);
     public Task<T> UpdateAsync(T entity);
     public Task RemoveAsync(T entity, bool softDelete = false);
     public Task RemoveRangeAsync(List<T> entities);
@@ -34,6 +35,11 @@ public class Repository<T>(DbContext context) : IRepository<T>
     public async Task<T> CreateAsync(T entity)
     {
         return (await _dbSet.AddAsync(entity)).Entity;
+    }
+
+    public async Task CreateRangeAsync(IEnumerable<T> entities)
+    {
+        await _dbSet.AddRangeAsync(entities);
     }
 
     public async Task<T> UpdateAsync(T entity)

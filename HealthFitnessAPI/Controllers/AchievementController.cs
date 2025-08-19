@@ -17,7 +17,7 @@ public class AchievementController(IAchievementService achievementService, IMapp
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> GetAll()
     {
-        var achievements = await achievementService.GetAll();
+        var achievements = await achievementService.GetAllWithThresholds();
         return Ok(mapper.Map<List<AchievementResultDto>>(achievements));
     }
 

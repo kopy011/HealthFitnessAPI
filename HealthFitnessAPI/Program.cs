@@ -60,8 +60,10 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IUserInitService, UserInitService>();
+builder.Services.AddScoped<IMockDataInitService, MockDataInitService>();
 
 builder.Services.AddQuartz(options =>
 {

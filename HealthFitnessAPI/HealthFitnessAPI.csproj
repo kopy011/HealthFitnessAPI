@@ -29,4 +29,10 @@
         <PackageReference Include="Scalar.AspNetCore" Version="2.6.9"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="InitFiles\badge.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

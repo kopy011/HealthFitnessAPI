@@ -1,9 +1,7 @@
-namespace HealthFitnessAPI.Model.Dtos.Achievement
+namespace HealthFitnessAPI.Model.Dtos.Achievement;
+
+public class AbstractAchievementDto
 {
-    public class AbstractAchievementDto
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string AchievementType { get; set; }
-    }
+    public string Description { get; set; }
+    public string Category { get; set; }
 }

@@ -4,6 +4,7 @@ using HealthFitnessAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthFitnessAPI.Migrations
 {
     [DbContext(typeof(HealthFitnessDbContext))]
-    partial class HealthFitnessDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819104309_AchievementCategory")]
+    partial class AchievementCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,69 +51,6 @@ namespace HealthFitnessAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Achievements");
-                });
-
-            modelBuilder.Entity("HealthFitnessAPI.Entities.AchievementLevel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Deleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("LogoFilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("AchievementLevels");
-                });
-
-            modelBuilder.Entity("HealthFitnessAPI.Entities.AchievementLevelThreshold", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AchievementId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AchievementLevelId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Deleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("FemaleThreshold")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaleThreshold")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AchievementId");
-
-                    b.HasIndex("AchievementLevelId");
-
-                    b.ToTable("AchievementLevelThresholds");
                 });
 
             modelBuilder.Entity("HealthFitnessAPI.Entities.Friendship", b =>
@@ -232,7 +172,7 @@ namespace HealthFitnessAPI.Migrations
                     b.Property<int>("AchievementId")
                         .HasColumnType("int");
 
-                    b.Property<int>("AchievementLevelId")
+                    b.Property<int>("AchievementLevel")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -250,26 +190,9 @@ namespace HealthFitnessAPI.Migrations
 
                     b.HasIndex("AchievementId");
 
-                    b.HasIndex("AchievementLevelId");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("UserAchievements");
-                });
-
-            modelBuilder.Entity("HealthFitnessAPI.Entities.AchievementLevelThreshold", b =>
-                {
-                    b.HasOne("HealthFitnessAPI.Entities.Achievement", null)
-                        .WithMany("AchievementLevelThresholds")
-                        .HasForeignKey("AchievementId");
-
-                    b.HasOne("HealthFitnessAPI.Entities.AchievementLevel", "AchievementLevel")
-                        .WithMany()
-                        .HasForeignKey("AchievementLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AchievementLevel");
                 });
 
             modelBuilder.Entity("HealthFitnessAPI.Entities.Friendship", b =>
@@ -299,12 +222,6 @@ namespace HealthFitnessAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HealthFitnessAPI.Entities.AchievementLevel", "AchievementLevel")
-                        .WithMany()
-                        .HasForeignKey("AchievementLevelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("HealthFitnessAPI.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -313,14 +230,7 @@ namespace HealthFitnessAPI.Migrations
 
                     b.Navigation("Achievement");
 
-                    b.Navigation("AchievementLevel");
-
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("HealthFitnessAPI.Entities.Achievement", b =>
-                {
-                    b.Navigation("AchievementLevelThresholds");
                 });
 
             modelBuilder.Entity("HealthFitnessAPI.Entities.User", b =>

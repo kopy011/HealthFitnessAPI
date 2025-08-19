@@ -9,6 +9,8 @@ public class HealthFitnessDbContext(DbContextOptions<HealthFitnessDbContext> opt
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Achievement> Achievements { get; set; }
+    public DbSet<AchievementLevel> AchievementLevels { get; set; }
+    public DbSet<AchievementLevelThreshold> AchievementLevelThresholds { get; set; }
     public DbSet<UserAchievement> UserAchievements { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Friendship> Friendships { get; set; }
@@ -39,6 +41,14 @@ public class HealthFitnessDbContext(DbContextOptions<HealthFitnessDbContext> opt
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Achievement>().HasQueryFilter(a => !a.Deleted).Property(a => a.Deleted)
+            .HasDefaultValue(false);
+        modelBuilder.Entity<Achievement>().HasIndex(a => a.Category).IsUnique();
+
+        modelBuilder.Entity<AchievementLevel>().HasQueryFilter(a => !a.Deleted).Property(a => a.Deleted)
+            .HasDefaultValue(false);
+        modelBuilder.Entity<AchievementLevel>().HasIndex(a => a.Name).IsUnique();
+
+        modelBuilder.Entity<AchievementLevelThreshold>().HasQueryFilter(a => !a.Deleted).Property(a => a.Deleted)
             .HasDefaultValue(false);
 
         modelBuilder.Entity<UserAchievement>().HasQueryFilter(u => !u.Deleted).Property(u => u.Deleted)
