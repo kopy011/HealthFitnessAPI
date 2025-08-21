@@ -14,7 +14,11 @@ public class AchievementService(IUnitOfWork unitOfWork)
 {
     public override async Task<Achievement> Update(Achievement entity)
     {
-        await unitOfWork.GetRepository<AchievementLevelThreshold>().RemoveRangeAsync(entity.AchievementLevelThresholds);
+        var achievementInDb = await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
+            .Include(a => a.AchievementLevelThresholds).FirstOrDefaultAsync(a => a.Id == entity.Id);
+        if (achievementInDb == null) throw new Exception("Achievement not found");
+        await unitOfWork.GetRepository<AchievementLevelThreshold>()
+            .RemoveRangeAsync(achievementInDb.AchievementLevelThresholds);
         await unitOfWork.SaveChangesAsync();
         return await base.Update(entity);
     }
@@ -22,6 +26,6 @@ public class AchievementService(IUnitOfWork unitOfWork)
     public async Task<List<Achievement>> GetAllWithThresholds()
     {
         return await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
-            .Include(a => a.AchievementLevelThresholds).ToListAsync();
+            .Include(a => a.AchievementLevelThresholds).ThenInclude(alt => alt.AchievementLevel).ToListAsync();
     }
 }

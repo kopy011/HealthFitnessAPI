@@ -22,7 +22,7 @@ public class Repository<T>(DbContext context) : IRepository<T>
 
     public IQueryable<T> GetAllAsQueryable(bool track = false)
     {
-        return track ? _dbSet.AsTracking() : _dbSet.AsQueryable();
+        return track ? _dbSet.AsTracking() : _dbSet.AsQueryable().AsNoTracking();
     }
 
     public async Task<List<T>> GetAllAsync(bool track = false)

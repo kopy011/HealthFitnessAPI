@@ -14,6 +14,6 @@ public class AchievementLevelProfile : Profile
         CreateMap<AchievementLevel, AchievementLevelResultDto>();
 
         CreateMap<AchievementLevelThresholdDto, AchievementLevelThreshold>();
-        CreateMap<AchievementLevelThreshold, AchievementLevelThresholdResultDto>();
+        CreateMap<AchievementLevelThreshold, AchievementLevelThresholdDto>();
     }
 }

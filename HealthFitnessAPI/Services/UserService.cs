@@ -12,6 +12,7 @@ namespace HealthFitnessAPI.Services;
 public interface IUserService : IAbstractService<User>
 {
     Task<User> ChangePassword(ChangePasswordDto changePasswordDto);
+    Task<User> AdminChangePassword(AdminChangePasswordDto adminChangePassword);
     Task<List<User>> GetFriends(int userId);
     Task<List<Friendship>> GetSentPendingFriendRequests(int userId);
     Task<List<Friendship>> GetReceivedPendingFriendRequests(int userId);
@@ -54,12 +55,36 @@ public class UserService(
         return user;
     }
 
+    public async Task<User> AdminChangePassword(AdminChangePasswordDto adminChangePassword)
+    {
+        var user = await _unitOfWork.GetDbSet<User>()
+            .FirstOrDefaultAsync(u => u.Id == adminChangePassword.Id);
+        if (user == null)
+            throw new Exception("Invalid username!");
+
+        user.Password = Hash.HashPassword(adminChangePassword.Password!);
+        await _unitOfWork.SaveChangesAsync();
+
+        var refreshToken = await _unitOfWork.GetDbSet<RefreshToken>().FirstOrDefaultAsync(rt => rt.UserId == user.Id);
+        if (refreshToken != null) await authService.RevokeRefreshToken(refreshToken.Token!);
+
+        return user;
+    }
+
     public async Task<List<User>> GetFriends(int userId)
     {
         var user = await GetByIdWithInclude(userId);
         return user.FriendsSent.Where(f => f.Status == FriendshipStatus.Accepted).Select(f => f.Friend)
             .Union(user.FriendsRecieved.Where(f => f.Status == FriendshipStatus.Accepted).Select(f => f.User))
             .DistinctBy(u => u.Id).ToList();
+    }
+
+    public override async Task<User> Update(User entity)
+    {
+        var userInDb = await GetById(entity.Id);
+        entity.Password = userInDb.Password;
+        entity.Role = userInDb.Role;
+        return await base.Update(entity);
     }
 
     public async Task<List<Friendship>> GetSentPendingFriendRequests(int userId)

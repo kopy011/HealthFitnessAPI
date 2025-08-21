@@ -1,7 +1,5 @@
-using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Model.Dtos.Auth;
 using HealthFitnessAPI.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthFitnessAPI.Controllers;
@@ -39,10 +37,16 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("logout")]
-    [Authorize(Roles = $"{Roles.User}, {Roles.Admin}")]
     public async Task<IActionResult> Revoke([FromBody] RefreshDto refreshDto)
     {
-        await authService.RevokeRefreshToken(refreshDto.RefreshToken!);
-        return Ok();
+        try
+        {
+            await authService.RevokeRefreshToken(refreshDto.RefreshToken!);
+            return Ok();
+        }
+        catch (Exception)
+        {
+            return Ok();
+        }
     }
 }

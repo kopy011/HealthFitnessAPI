@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.Model.Dtos.Auth;
@@ -13,6 +14,7 @@ namespace HealthFitnessAPI.Services;
 public interface IAuthService
 {
     public Task<LoginResponseDto> Login(LoginDto loginDto);
+    public Task<LoginResponseDto> AdminLogin(LoginDto loginDto);
     public Task<LoginResponseDto> ValidateRefreshToken(string token);
     public Task RevokeRefreshToken(string token);
 }
@@ -22,6 +24,16 @@ public class AuthService(IUnitOfWork unitOfWork, IConfiguration configuration) :
     public async Task<LoginResponseDto> Login(LoginDto loginDto)
     {
         var user = await unitOfWork.GetDbSet<User>().FirstOrDefaultAsync(u => u.Username == loginDto.Username);
+        if (user is null || !Hash.VerifyPassword(loginDto.Password!, user.Password!))
+            throw new Exception("Invalid credentials!");
+
+        return await GenerateJwtToken(user);
+    }
+
+    public async Task<LoginResponseDto> AdminLogin(LoginDto loginDto)
+    {
+        var user = await unitOfWork.GetDbSet<User>()
+            .FirstOrDefaultAsync(u => u.Username == loginDto.Username && u.Role == Roles.Admin);
         if (user is null || !Hash.VerifyPassword(loginDto.Password!, user.Password!))
             throw new Exception("Invalid credentials!");
 

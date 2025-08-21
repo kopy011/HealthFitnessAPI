@@ -24,9 +24,6 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
 
         List<string> achievementCategories = ["Fekvenyomás", "Gugolás", "Lehúzás", "Felülés", "Fekvőtámasz"];
         List<string> achievementLevelNames = ["Bronz", "Ezüst", "Arany", "Platina"];
-        var achievementBadgeFileName = await fileService.SaveBase64PngAsync(
-            await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "InitFiles", "badge.txt")),
-            "badge.png");
 
         for (var i = 0; i < 20; i++)
         {
@@ -62,12 +59,18 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
             });
         }
 
-        await unitOfWork.GetRepository<AchievementLevel>().CreateRangeAsync(achievementLevelNames.Select(al =>
-            new AchievementLevel
+        foreach (var achievementLevel in achievementLevelNames)
+        {
+            var achievementBadgeFileName = await fileService.SaveBase64PngAsync(
+                await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "InitFiles", "badge.txt")),
+                $"{achievementLevel}.png");
+            await unitOfWork.GetRepository<AchievementLevel>().CreateAsync(new AchievementLevel
             {
-                Name = al,
+                Name = achievementLevel,
                 LogoFilePath = achievementBadgeFileName
-            }));
+            });
+        }
+
         await unitOfWork.SaveChangesAsync();
 
         var achievementLevels = await unitOfWork.GetRepository<AchievementLevel>().GetAllAsync();

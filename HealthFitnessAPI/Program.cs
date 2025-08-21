@@ -61,6 +61,7 @@ builder.Services.AddScoped<IUserAchievementService, UserAchievementService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IAchievementLevelService, AchievementLevelService>();
 
 builder.Services.AddScoped<IUserInitService, UserInitService>();
 builder.Services.AddScoped<IMockDataInitService, MockDataInitService>();

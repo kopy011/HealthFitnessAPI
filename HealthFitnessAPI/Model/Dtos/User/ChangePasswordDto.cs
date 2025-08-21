@@ -18,3 +18,18 @@ public class ChangePasswordDtoValidator : AbstractValidator<ChangePasswordDto>
         RuleFor(cp => cp.NewPassword).NotEmpty();
     }
 }
+
+public class AdminChangePasswordDto
+{
+    public int? Id { get; set; }
+    public string? Password { get; set; }
+}
+
+public class AdminChangePasswordDtoValidator : AbstractValidator<AdminChangePasswordDto>
+{
+    public AdminChangePasswordDtoValidator()
+    {
+        RuleFor(u => u.Id).NotEmpty();
+        RuleFor(cp => cp.Password).NotEmpty();
+    }
+}

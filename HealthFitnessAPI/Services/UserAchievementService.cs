@@ -19,7 +19,8 @@ public class UserAchievementService(IUnitOfWork unitOfWork)
     public async Task<List<UserAchievement>> GetAllWithInclude()
     {
         return await _unitOfWork.GetDbContext().Set<UserAchievement>().Include(ua => ua.User)
-            .Include(ua => ua.Achievement).AsNoTracking().ToListAsync();
+            .Include(ua => ua.Achievement)
+            .Include(ua => ua.AchievementLevel).AsNoTracking().ToListAsync();
     }
 
     public async Task<List<UserAchievement>> GetAllByUserId(int userId)
