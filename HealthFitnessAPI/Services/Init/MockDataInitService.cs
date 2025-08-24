@@ -94,7 +94,7 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
 
         await unitOfWork.SaveChangesAsync();
 
-        var users = unitOfWork.GetRepository<User>().GetAllAsQueryable().Include(u => u.FriendsRecieved)
+        var users = unitOfWork.GetRepository<User>().GetAllAsQueryable(true).Include(u => u.FriendsRecieved)
             .Include(u => u.FriendsSent).ToList();
 
         foreach (var user in users)
@@ -107,7 +107,8 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
             {
                 FriendId = friend.Id,
                 UserId = user.Id,
-                LastUpdated = DateTime.UtcNow.AddDays(new Random().Next(-5, 5))
+                LastUpdated = DateTime.UtcNow.AddDays(new Random().Next(-5, 5)),
+                Status = (FriendshipStatus)new Random().Next(0, 2)
             });
 
             await unitOfWork.SaveChangesAsync();

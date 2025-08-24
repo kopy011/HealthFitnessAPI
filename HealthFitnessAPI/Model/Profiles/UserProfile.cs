@@ -20,5 +20,10 @@ public class UserProfile : Profile
 
         CreateMap<Friendship, FriendshipResultDto>().ForMember(dest => dest.Status,
             opt => opt.MapFrom(src => EnumHelper.GetFriendShipStatusDisplayValue(src.Status)));
+
+        CreateMap<User, UserProfileResultDto>()
+            .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => EnumHelper.GetGenderDisplayValue(src.Gender)));
+        CreateMap<UpdateUserProfileDto, User>()
+            .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => EnumHelper.GetGenderEnumValue(src.Gender)));
     }
 }

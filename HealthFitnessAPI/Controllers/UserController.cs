@@ -93,4 +93,22 @@ public class UserController(IUserService userService, IMapper mapper) : Controll
             EnumHelper.GetFeedOrderByEnumValue(options.FeedOrderBy), options.QueryString);
         return Ok(mapper.Map<List<UserAchievement>>(result));
     }
+
+    [Authorize(Roles = $"{Roles.User}, {Roles.Admin}")]
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetUserProfile()
+    {
+        var userId = HttpContext.GetUserIdOrThrow();
+        var result = await userService.GetById(userId);
+        return Ok(mapper.Map<UserProfileResultDto>(result));
+    }
+
+    [Authorize(Roles = $"{Roles.User}, {Roles.Admin}")]
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto user)
+    {
+        var userId = HttpContext.GetUserIdOrThrow();
+        var result = await userService.UpdateUserProfile(userId, user);
+        return Ok(mapper.Map<UserProfileResultDto>(result));
+    }
 }

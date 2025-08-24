@@ -1,3 +1,4 @@
+using AutoMapper;
 using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Constants.Enums;
 using HealthFitnessAPI.Entities;
@@ -23,12 +24,15 @@ public interface IUserService : IAbstractService<User>
 
     Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
         string? queryString = null);
+
+    Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user);
 }
 
 public class UserService(
     IUnitOfWork unitOfWork,
     IAuthService authService,
-    IUserAchievementService userAchievementService)
+    IUserAchievementService userAchievementService,
+    IMapper mapper)
     : AbstractService<User>(unitOfWork), IUserService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -179,6 +183,13 @@ public class UserService(
 
         return userAchievements.Skip((pagination.CurrentPage - 1) * pagination.PageSize).Take(pagination.PageSize)
             .ToList();
+    }
+
+    public async Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user)
+    {
+        var userInDb = await GetById(id);
+        var result = mapper.Map(user, userInDb);
+        return await Update(result);
     }
 
     private async Task<User> GetByIdWithInclude(int userId, bool track = false)
