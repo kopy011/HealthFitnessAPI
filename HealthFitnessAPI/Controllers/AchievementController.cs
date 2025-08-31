@@ -1,6 +1,5 @@
 using AutoMapper;
 using HealthFitnessAPI.Constants;
-using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Model.Dtos.Achievement;
 using HealthFitnessAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -17,8 +16,8 @@ public class AchievementController(IAchievementService achievementService, IMapp
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> GetAll()
     {
-        var achievements = await achievementService.GetAllWithThresholds();
-        return Ok(mapper.Map<List<AchievementResultDto>>(achievements));
+        var achievements = await achievementService.GetAllWithImages();
+        return Ok(achievements);
     }
 
     [HttpGet("{id:int}")]
@@ -35,7 +34,7 @@ public class AchievementController(IAchievementService achievementService, IMapp
     {
         try
         {
-            var result = await achievementService.Create(mapper.Map<Achievement>(achievement));
+            var result = await achievementService.CreateWithUpload(achievement);
             return Ok(mapper.Map<AchievementResultDto>(result));
         }
         catch (Exception e)
@@ -50,7 +49,7 @@ public class AchievementController(IAchievementService achievementService, IMapp
     {
         try
         {
-            var result = await achievementService.Update(mapper.Map<Achievement>(achievement));
+            var result = await achievementService.UpdateWithUpload(achievement);
             return Ok(mapper.Map<AchievementResultDto>(result));
         }
         catch (Exception e)

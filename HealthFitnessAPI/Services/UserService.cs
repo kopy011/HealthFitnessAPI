@@ -5,6 +5,7 @@ using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.Model;
 using HealthFitnessAPI.Model.Dtos.User;
+using HealthFitnessAPI.Model.Dtos.UserAchievement;
 using HealthFitnessAPI.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,11 +22,13 @@ public interface IUserService : IAbstractService<User>
     Task RemoveFriend(int userId, int friendId);
     Task AcceptFriendRequest(int userId, int friendId);
     Task DeclineFriendRequest(int userId, int friendId);
+    Task<bool> IsFriend(int userId, int friendId);
 
     Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
         string? queryString = null);
 
     Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user);
+    Task<PublicProfileDto> GetPublicProfile(int userId, int friendId);
 }
 
 public class UserService(
@@ -156,6 +159,16 @@ public class UserService(
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<bool> IsFriend(int userId, int friendId)
+    {
+        var user = await GetByIdWithInclude(userId);
+
+        return user.FriendsSent.Any(f =>
+                   f.UserId == userId && f.FriendId == friendId && f.Status == FriendshipStatus.Accepted) ||
+               user.FriendsRecieved.Any(f =>
+                   f.FriendId == userId && f.UserId == friendId && f.Status == FriendshipStatus.Accepted);
+    }
+
     public async Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
         string? queryString = null)
     {
@@ -190,6 +203,21 @@ public class UserService(
         var userInDb = await GetById(id);
         var result = mapper.Map(user, userInDb);
         return await Update(result);
+    }
+
+    public async Task<PublicProfileDto> GetPublicProfile(int userId, int friendId)
+    {
+        if (userId != friendId && !await IsFriend(userId, friendId))
+            throw new Exception("Csak a barátaid profilját nézheted meg!");
+
+        var friend = await GetByIdWithInclude(friendId);
+        var userAchievements = await userAchievementService.GetAllByUserId(friend.Id);
+
+        return new PublicProfileDto
+        {
+            User = mapper.Map<UserResultDto>(friend),
+            UserAchievements = mapper.Map<List<UserAchievementWithAchievementDto>>(userAchievements)
+        };
     }
 
     private async Task<User> GetByIdWithInclude(int userId, bool track = false)

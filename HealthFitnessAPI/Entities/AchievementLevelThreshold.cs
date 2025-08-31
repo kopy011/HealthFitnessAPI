@@ -10,4 +10,6 @@ public class AchievementLevelThreshold : AbstractEntity
     [Required] public int AchievementLevelId { get; set; }
 
     public AchievementLevel? AchievementLevel { get; set; }
+
+    public string LogoPath { get; set; }
 }

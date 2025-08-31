@@ -60,37 +60,41 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
         }
 
         foreach (var achievementLevel in achievementLevelNames)
-        {
-            var achievementBadgeFileName = await fileService.SaveBase64PngAsync(
-                await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "InitFiles", "badge.txt")),
-                $"{achievementLevel}.png");
             await unitOfWork.GetRepository<AchievementLevel>().CreateAsync(new AchievementLevel
             {
-                Name = achievementLevel,
-                LogoFilePath = achievementBadgeFileName
+                Name = achievementLevel
             });
-        }
 
         await unitOfWork.SaveChangesAsync();
 
         var achievementLevels = await unitOfWork.GetRepository<AchievementLevel>().GetAllAsync();
+        var image = await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "InitFiles",
+            "badge.txt"));
 
         foreach (var achievement in achievementCategories)
-            await unitOfWork.GetRepository<Achievement>().CreateAsync(
-                new Achievement
-                {
-                    Category = achievement,
-                    Description = $"Csinálj 10 {achievement} gyakorlatot",
-                    AchievementLevelThresholds =
-                    [
-                        new AchievementLevelThreshold
-                        {
-                            AchievementLevelId = achievementLevels.GetRandom().Id,
-                            MaleThreshold = new Random().Next(0, 20),
-                            FemaleThreshold = new Random().Next(0, 10)
-                        }
-                    ]
-                });
+        {
+            var achievementToSave = new Achievement
+            {
+                Category = achievement,
+                Description = $"Csinálj 10 {achievement} gyakorlatot",
+                AchievementLevelThresholds =
+                [
+                ]
+            };
+
+            foreach (var achievementLevel in achievementLevels)
+                achievementToSave.AchievementLevelThresholds.Add(
+                    new AchievementLevelThreshold
+                    {
+                        AchievementLevelId = achievementLevel.Id,
+                        MaleThreshold = new Random().Next(0, 20),
+                        FemaleThreshold = new Random().Next(0, 10),
+                        LogoPath = await fileService.SaveBase64PngAsync(image,
+                            $"{achievementToSave.Category}_{achievementLevel.Id}.png")
+                    });
+
+            await unitOfWork.GetRepository<Achievement>().CreateAsync(achievementToSave);
+        }
 
         await unitOfWork.SaveChangesAsync();
 

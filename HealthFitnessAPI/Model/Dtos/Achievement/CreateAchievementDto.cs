@@ -5,7 +5,7 @@ namespace HealthFitnessAPI.Model.Dtos.Achievement;
 
 public class CreateAchievementDto : AbstractAchievementDto
 {
-    public List<AchievementLevelThresholdDto> AchievementLevelThresholds { get; set; }
+    public List<CreateAchievementLevelThresholdDto> AchievementLevelThresholds { get; set; }
 }
 
 public class CreateAchievementDtoValidator : AbstractValidator<CreateAchievementDto>
@@ -14,6 +14,6 @@ public class CreateAchievementDtoValidator : AbstractValidator<CreateAchievement
     {
         RuleFor(a => a.Description).NotEmpty();
         RuleFor(a => a.AchievementLevelThresholds).NotEmpty();
-        RuleForEach(a => a.AchievementLevelThresholds).SetValidator(new AchievementLevelThresholdDtoValidator());
+        RuleForEach(a => a.AchievementLevelThresholds).SetValidator(new CreateAchievementLevelThresholdDtoValidator());
     }
 }

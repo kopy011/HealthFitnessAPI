@@ -1,5 +1,6 @@
 using AutoMapper;
 using HealthFitnessAPI.Constants;
+using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Model.Dtos.AchievementLevel;
 using HealthFitnessAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,23 +17,23 @@ public class AchievementLevelController(IAchievementLevelService achievementLeve
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> GetAll()
     {
-        var result = await achievementLevelService.GetAllWithImages();
-        return Ok(result);
+        var result = await achievementLevelService.GetAll();
+        return Ok(mapper.Map<List<AchievementLevelResultDto>>(result));
     }
 
     [HttpPost]
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> Create([FromBody] CreateAchievementLevelDto createAchievementLevelDto)
     {
-        var result = await achievementLevelService.CreateWithUpload(createAchievementLevelDto);
+        var result = await achievementLevelService.Create(mapper.Map<AchievementLevel>(createAchievementLevelDto));
         return Ok(result);
     }
 
     [HttpPut]
     [Authorize(Roles = $"{Roles.Admin}")]
-    public async Task<IActionResult> Update([FromBody] UpdateAchievementLevelDto createAchievementLevelDto)
+    public async Task<IActionResult> Update([FromBody] UpdateAchievementLevelDto updateAchievementLevelDto)
     {
-        var result = await achievementLevelService.UpdateWithUpload(createAchievementLevelDto);
+        var result = await achievementLevelService.Update(mapper.Map<AchievementLevel>(updateAchievementLevelDto));
         return Ok(result);
     }
 

@@ -13,5 +13,7 @@ public class UserAchievementProfile : Profile
         CreateMap<UpdateUserAchievementDto, UserAchievement>();
         CreateMap<UserAchievement, UserAchievementResultDto>()
             .ForMember(dest => dest.AchievementLevelName, opt => opt.MapFrom(src => src.AchievementLevel!.Name));
+        CreateMap<UserAchievement, UserAchievementWithAchievementDto>().ForMember(dest => dest.AchievementLevelName,
+            opt => opt.MapFrom(src => src.AchievementLevel!.Name));
     }
 }

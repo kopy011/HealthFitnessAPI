@@ -111,4 +111,20 @@ public class UserController(IUserService userService, IMapper mapper) : Controll
         var result = await userService.UpdateUserProfile(userId, user);
         return Ok(mapper.Map<UserProfileResultDto>(result));
     }
+
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    [HttpGet("profile/{friendId:int}")]
+    public async Task<IActionResult> GetPublicProfile(int friendId)
+    {
+        try
+        {
+            var userId = HttpContext.GetUserIdOrThrow();
+            var result = await userService.GetPublicProfile(userId, friendId);
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
