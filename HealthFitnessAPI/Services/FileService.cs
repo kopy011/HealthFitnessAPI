@@ -12,6 +12,7 @@ public interface IFileService
     Task<IReadOnlyList<FileDto>> GetAllFilesAsync(CancellationToken ct = default);
 
     Task<FileDto> GetFileAsync(string fileName, CancellationToken ct = default);
+    FileStream GetFileStream(string fileName, CancellationToken ct = default);
 }
 
 public class FileService : IFileService
@@ -99,6 +100,17 @@ public class FileService : IFileService
         var base64 = Convert.ToBase64String(bytes);
 
         return new FileDto(safeName, $"data:image/png;base64,{base64}");
+    }
+
+    public FileStream GetFileStream(string fileName, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            throw new ArgumentException("Filename is required.", nameof(fileName));
+
+        var safeName = EnsurePngExtension(SanitizeFileName(fileName));
+        var path = Path.Combine(_badgesDir, safeName);
+
+        return File.OpenRead(path);
     }
 
     private static string SanitizeFileName(string? name)

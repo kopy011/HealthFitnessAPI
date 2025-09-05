@@ -11,5 +11,6 @@ public class AchievementProfile : Profile
         CreateMap<CreateAchievementDto, Achievement>();
         CreateMap<UpdateAchievementDto, Achievement>();
         CreateMap<Achievement, AchievementResultDto>();
+        CreateMap<Achievement, AchievementPathOnlyResultDto>();
     }
 }

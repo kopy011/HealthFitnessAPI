@@ -1,4 +1,6 @@
+using System.Web;
 using AutoMapper;
+using AutoWrapper.Filters;
 using HealthFitnessAPI.Constants;
 using HealthFitnessAPI.Model.Dtos.Achievement;
 using HealthFitnessAPI.Services;
@@ -10,7 +12,8 @@ namespace HealthFitnessAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class AchievementController(IAchievementService achievementService, IMapper mapper) : ControllerBase
+public class AchievementController(IAchievementService achievementService, IMapper mapper, IFileService fileService)
+    : ControllerBase
 {
     [HttpGet]
     [Authorize(Roles = $"{Roles.Admin}")]
@@ -71,5 +74,14 @@ public class AchievementController(IAchievementService achievementService, IMapp
         {
             return BadRequest(e.Message);
         }
+    }
+
+    [HttpGet("image/{imageName}")]
+    [AllowAnonymous]
+    [AutoWrapIgnore]
+    public IActionResult GetBadge(string imageName)
+    {
+        var fs = fileService.GetFileStream(HttpUtility.UrlDecode(imageName));
+        return File(fs, "application/octet-stream", true);
     }
 }

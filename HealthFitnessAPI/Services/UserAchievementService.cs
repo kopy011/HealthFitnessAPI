@@ -28,6 +28,7 @@ public class UserAchievementService(IUnitOfWork unitOfWork)
         return await _unitOfWork.GetRepository<UserAchievement>().GetAllAsQueryable().Where(u => u.UserId == userId)
             .Include(u => u.User)
             .Include(u => u.Achievement)
+            .ThenInclude(u => u.AchievementLevelThresholds)
             .Include(u => u.AchievementLevel)
             .ToListAsync();
     }

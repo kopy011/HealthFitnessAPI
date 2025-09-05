@@ -10,8 +10,9 @@ public class UserAchievementWithAchievementDto
     public int AchievementLevelId { get; set; }
     public string AchievementLevelName { get; set; }
     public int AchievementId { get; set; }
-    public AchievementResultDto Achievement { get; set; }
+    public AchievementPathOnlyResultDto Achievement { get; set; }
     public AchievementLevelResultDto AchievementLevel { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class UserAchievementResultDto : UserAchievementWithAchievementDto
