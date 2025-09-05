@@ -32,7 +32,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
         return Ok(mapper.Map<List<FriendshipResultDto>>(result));
     }
 
-    [HttpGet("pending/recieved")]
+    [HttpGet("pending/received")]
     [Authorize(Roles = $"{Roles.User}")]
     public async Task<IActionResult> GetReceivedPendingFriendRequests()
     {
