@@ -4,6 +4,7 @@ using HealthFitnessAPI.Entities;
 using HealthFitnessAPI.Extensions;
 using HealthFitnessAPI.Helpers;
 using HealthFitnessAPI.Model.Dtos.User;
+using HealthFitnessAPI.Model.Dtos.UserAchievement;
 using HealthFitnessAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,8 @@ namespace HealthFitnessAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService, IMapper mapper) : ControllerBase
+public class UserController(IUserService userService, IUserAchievementService userAchievementService, IMapper mapper)
+    : ControllerBase
 {
     [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     [HttpGet]
@@ -121,6 +123,22 @@ public class UserController(IUserService userService, IMapper mapper) : Controll
             var userId = HttpContext.GetUserIdOrThrow();
             var result = await userService.GetPublicProfile(userId, friendId);
             return Ok(result);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    [HttpGet("user-achievements")]
+    public async Task<IActionResult> GetUserAchievements()
+    {
+        try
+        {
+            var userId = HttpContext.GetUserIdOrThrow();
+            var result = await userAchievementService.GetAllByUserId(userId);
+            return Ok(mapper.Map<List<UserAchievementResultDto>>(result));
         }
         catch (Exception e)
         {
