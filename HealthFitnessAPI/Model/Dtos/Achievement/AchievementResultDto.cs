@@ -2,9 +2,13 @@ using HealthFitnessAPI.Model.Dtos.AchievementLevelThreshold;
 
 namespace HealthFitnessAPI.Model.Dtos.Achievement;
 
-public class AchievementResultDto : AbstractAchievementDto
+public class AchievementListResultDto : AbstractAchievementDto
 {
     public int Id { get; set; }
+}
+
+public class AchievementResultDto : AchievementListResultDto
+{
     public List<AchievementLevelThresholdResultWithImageDto> AchievementLevelThresholds { get; set; }
 }
 

@@ -70,6 +70,7 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
         var achievementLevels = await unitOfWork.GetRepository<AchievementLevel>().GetAllAsync();
         var image = await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "InitFiles",
             "badge.txt"));
+        List<string> thresholdTypes = ["kg", "db"];
 
         foreach (var achievement in achievementCategories)
         {
@@ -89,6 +90,8 @@ public class MockDataInitService(IUnitOfWork unitOfWork, IFileService fileServic
                         AchievementLevelId = achievementLevel.Id,
                         MaleThreshold = new Random().Next(0, 20),
                         FemaleThreshold = new Random().Next(0, 10),
+                        ThresholdType = thresholdTypes.GetRandom(),
+                        Order = achievementLevels.IndexOf(achievementLevel),
                         LogoPath = await fileService.SaveBase64PngAsync(image,
                             $"{achievementToSave.Category}_{achievementLevel.Id}.png")
                     });

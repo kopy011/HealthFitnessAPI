@@ -19,16 +19,16 @@ public class AchievementController(IAchievementService achievementService, IMapp
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> GetAll()
     {
-        var achievements = await achievementService.GetAllWithImages();
-        return Ok(achievements);
+        var achievements = await achievementService.GetAll();
+        return Ok(mapper.Map<List<AchievementListResultDto>>(achievements));
     }
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{Roles.Admin}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var achievement = await achievementService.GetById(id);
-        return Ok(mapper.Map<AchievementResultDto>(achievement));
+        var achievement = await achievementService.GetByIdWithThresholds(id);
+        return Ok(achievement);
     }
 
     [HttpPost]

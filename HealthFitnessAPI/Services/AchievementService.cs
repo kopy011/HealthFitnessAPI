@@ -8,21 +8,14 @@ namespace HealthFitnessAPI.Services;
 
 public interface IAchievementService : IAbstractService<Achievement>
 {
-    Task<List<Achievement>> GetAllWithThresholds();
-    Task<List<AchievementResultDto>> GetAllWithImages();
     Task<Achievement> CreateWithUpload(CreateAchievementDto dto);
     Task<Achievement> UpdateWithUpload(UpdateAchievementDto dto);
+    Task<AchievementResultDto> GetByIdWithThresholds(int id);
 }
 
 public class AchievementService(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService)
     : AbstractService<Achievement>(unitOfWork), IAchievementService
 {
-    public async Task<List<Achievement>> GetAllWithThresholds()
-    {
-        return await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
-            .Include(a => a.AchievementLevelThresholds).ThenInclude(alt => alt.AchievementLevel).ToListAsync();
-    }
-
     public async Task<Achievement> CreateWithUpload(CreateAchievementDto dto)
     {
         var achievement = mapper.Map<Achievement>(dto);
@@ -61,15 +54,16 @@ public class AchievementService(IUnitOfWork unitOfWork, IMapper mapper, IFileSer
         return await base.Update(achievement);
     }
 
-    public async Task<List<AchievementResultDto>> GetAllWithImages()
+    public async Task<AchievementResultDto> GetByIdWithThresholds(int id)
     {
-        var achievements = await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
-            .Include(a => a.AchievementLevelThresholds).ToListAsync();
+        var achievement = await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
+            .Include(a => a.AchievementLevelThresholds).FirstOrDefaultAsync(a => a.Id == id);
 
-        var result = mapper.Map<List<AchievementResultDto>>(achievements);
+        if (achievement == null) throw new Exception("Achievement not found");
 
-        foreach (var achievement in result)
-        foreach (var alt in achievement.AchievementLevelThresholds)
+        var result = mapper.Map<AchievementResultDto>(achievement);
+
+        foreach (var alt in result.AchievementLevelThresholds)
         {
             var image = await fileService.GetFileAsync($"{achievement.Category}_{alt.AchievementLevelId}.png");
             alt.LogoBase64 = image.Base64;
