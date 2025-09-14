@@ -15,7 +15,7 @@ namespace HealthFitnessAPI.Controllers;
 public class FriendshipController(IUserService userService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> GetFriends()
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -23,8 +23,18 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
         return Ok(mapper.Map<List<UserResultDto>>(result));
     }
 
+    [HttpGet("possible-friends")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    public async Task<IActionResult> GetPossibleFriends()
+    {
+        var userId = HttpContext.GetUserIdOrThrow();
+        var result = await userService.GetPossibleFriends(userId);
+        return Ok(mapper.Map<List<UserResultDto>>(result));
+    }
+
+
     [HttpGet("pending/sent")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> GetSentPendingFriendRequests()
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -33,7 +43,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
     }
 
     [HttpGet("pending/received")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> GetReceivedPendingFriendRequests()
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -42,7 +52,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
     }
 
     [HttpPost("add/{friendId:int}")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> AddFriend(int friendId)
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -51,7 +61,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
     }
 
     [HttpDelete("remove/{friendId:int}")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> RemoveFriend(int friendId)
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -60,7 +70,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
     }
 
     [HttpPost("accept/{friendId:int}")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> AcceptFriendRequest(int friendId)
     {
         var userId = HttpContext.GetUserIdOrThrow();
@@ -69,7 +79,7 @@ public class FriendshipController(IUserService userService, IMapper mapper) : Co
     }
 
     [HttpDelete("decline/{friendId:int}")]
-    [Authorize(Roles = $"{Roles.User}")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
     public async Task<IActionResult> DeclineFriendRequest(int friendId)
     {
         var userId = HttpContext.GetUserIdOrThrow();

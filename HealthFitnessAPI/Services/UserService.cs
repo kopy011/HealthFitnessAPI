@@ -29,6 +29,7 @@ public interface IUserService : IAbstractService<User>
 
     Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user);
     Task<PublicProfileDto> GetPublicProfile(int userId, int friendId);
+    Task<List<User>> GetPossibleFriends(int userId);
 }
 
 public class UserService(
@@ -218,6 +219,20 @@ public class UserService(
             User = mapper.Map<UserResultDto>(friend),
             UserAchievements = mapper.Map<List<UserAchievementWithAchievementDto>>(userAchievements)
         };
+    }
+
+    public async Task<List<User>> GetPossibleFriends(int userId)
+    {
+        return await _unitOfWork.GetRepository<User>().GetAllAsQueryable()
+            .Include(u => u.FriendsRecieved)
+            .Include(u => u.FriendsSent)
+            .Where(u => u.Id != userId)
+            .Where(u =>
+                !u.FriendsSent.Any(f => f.FriendId == userId) &&
+                !u.FriendsRecieved.Any(f => f.UserId == userId)
+            )
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     private async Task<User> GetByIdWithInclude(int userId, bool track = false)
