@@ -17,3 +17,9 @@ public class AchievementPathOnlyResultDto : AbstractAchievementDto
     public int Id { get; set; }
     public List<AchievementLevelThresholdResultDto> AchievementLevelThresholds { get; set; }
 }
+
+public class CompletedAchievementResultDto : AchievementPathOnlyResultDto
+{
+    public int LevelsCount { get; set; }
+    public int CompletedLevelsCount { get; set; }
+}

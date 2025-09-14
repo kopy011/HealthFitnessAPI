@@ -4,6 +4,8 @@ public class AchievementLevelThresholdResultDto : AbstractAchievementLevelThresh
 {
     public int Id { get; set; }
     public string LogoPath { get; set; }
+    public bool IsCompleted { get; set; }
+    public string AchievementLevelName { get; set; }
 }
 
 public class AchievementLevelThresholdResultWithImageDto : AchievementLevelThresholdResultDto

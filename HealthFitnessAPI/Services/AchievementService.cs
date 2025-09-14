@@ -11,9 +11,14 @@ public interface IAchievementService : IAbstractService<Achievement>
     Task<Achievement> CreateWithUpload(CreateAchievementDto dto);
     Task<Achievement> UpdateWithUpload(UpdateAchievementDto dto);
     Task<AchievementResultDto> GetByIdWithThresholds(int id);
+    Task<List<CompletedAchievementResultDto>> GetAllAchievementsWithLevels(int userId);
 }
 
-public class AchievementService(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService)
+public class AchievementService(
+    IUnitOfWork unitOfWork,
+    IMapper mapper,
+    IFileService fileService,
+    IUserAchievementService userAchievementService)
     : AbstractService<Achievement>(unitOfWork), IAchievementService
 {
     public async Task<Achievement> CreateWithUpload(CreateAchievementDto dto)
@@ -68,6 +73,41 @@ public class AchievementService(IUnitOfWork unitOfWork, IMapper mapper, IFileSer
             var image = await fileService.GetFileAsync($"{achievement.Category}_{alt.AchievementLevelId}.png");
             alt.LogoBase64 = image.Base64;
         }
+
+        return result;
+    }
+
+    public async Task<List<CompletedAchievementResultDto>> GetAllAchievementsWithLevels(int userId)
+    {
+        var userAchievements = await userAchievementService.GetAllByUserId(userId);
+        var achievements = await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
+            .Include(a => a.AchievementLevelThresholds)
+            .ThenInclude(alt => alt.AchievementLevel).ToListAsync();
+
+        var result = mapper.Map<List<CompletedAchievementResultDto>>(achievements);
+
+        result.ForEach(achievement =>
+        {
+            var completedLevelIds = userAchievements.Where(ua => ua.AchievementId == achievement.Id)
+                .Select(ua => ua.AchievementLevelId).ToList();
+            var highestLevel = achievement.AchievementLevelThresholds
+                .Where(alt => completedLevelIds.Contains(alt.AchievementLevelId)).MaxBy(alt => alt.Order);
+
+            achievement.AchievementLevelThresholds.ForEach(level =>
+            {
+                if (highestLevel == null)
+                {
+                    level.IsCompleted = false;
+                    return;
+                }
+
+                ;
+
+                level.IsCompleted = level.Order <= highestLevel.Order;
+            });
+
+            achievement.CompletedLevelsCount = achievement.AchievementLevelThresholds.Count(alt => alt.IsCompleted);
+        });
 
         return result;
     }

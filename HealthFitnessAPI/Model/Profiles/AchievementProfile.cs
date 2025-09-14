@@ -12,6 +12,8 @@ public class AchievementProfile : Profile
         CreateMap<UpdateAchievementDto, Achievement>();
         CreateMap<Achievement, AchievementListResultDto>();
         CreateMap<Achievement, AchievementResultDto>();
+        CreateMap<Achievement, CompletedAchievementResultDto>()
+            .ForMember(dest => dest.LevelsCount, opt => opt.MapFrom(src => src.AchievementLevelThresholds.Count));
         CreateMap<Achievement, AchievementPathOnlyResultDto>();
     }
 }

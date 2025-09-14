@@ -16,6 +16,17 @@ public class UserAchievementService(IUnitOfWork unitOfWork)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
+    public override async Task<UserAchievement> Create(UserAchievement entity)
+    {
+        var achievement = await unitOfWork.GetRepository<Achievement>().GetAllAsQueryable()
+            .Include(a => a.AchievementLevelThresholds).FirstOrDefaultAsync(a => a.Id == entity.AchievementId);
+        if (achievement == null ||
+            achievement.AchievementLevelThresholds.All(alt => alt.AchievementLevelId != entity.AchievementLevelId))
+            throw new Exception("Achievement cannot be completed on the given level!");
+
+        return await base.Create(entity);
+    }
+
     public async Task<List<UserAchievement>> GetAllWithInclude()
     {
         return await _unitOfWork.GetDbContext().Set<UserAchievement>().Include(ua => ua.User)

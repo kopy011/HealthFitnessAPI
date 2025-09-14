@@ -2,6 +2,7 @@ using System.Web;
 using AutoMapper;
 using AutoWrapper.Filters;
 using HealthFitnessAPI.Constants;
+using HealthFitnessAPI.Extensions;
 using HealthFitnessAPI.Model.Dtos.Achievement;
 using HealthFitnessAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -83,5 +84,14 @@ public class AchievementController(IAchievementService achievementService, IMapp
     {
         var fs = fileService.GetFileStream(HttpUtility.UrlDecode(imageName));
         return File(fs, "application/octet-stream", true);
+    }
+
+    [HttpGet("levels")]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    public async Task<IActionResult> GetAllAchievementsWithLevels()
+    {
+        var userId = HttpContext.GetUserIdOrThrow();
+        var result = await achievementService.GetAllAchievementsWithLevels(userId);
+        return Ok(result);
     }
 }

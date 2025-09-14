@@ -10,7 +10,9 @@ public class AchievementLevelThresholdProfile : Profile
     {
         CreateMap<CreateAchievementLevelThresholdDto, AchievementLevelThreshold>();
         CreateMap<UpdateAchievementLevelThresholdDto, AchievementLevelThreshold>();
-        CreateMap<AchievementLevelThreshold, AchievementLevelThresholdResultDto>();
+        CreateMap<AchievementLevelThreshold, AchievementLevelThresholdResultDto>()
+            .ForMember(dest => dest.AchievementLevelName,
+                opt => opt.MapFrom(src => src.AchievementLevel == null ? "" : src.AchievementLevel.Name));
         CreateMap<AchievementLevelThreshold, AchievementLevelThresholdResultWithImageDto>();
     }
 }
