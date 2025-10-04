@@ -18,13 +18,14 @@ public interface IUserService : IAbstractService<User>
     Task<List<User>> GetFriends(int userId);
     Task<List<Friendship>> GetSentPendingFriendRequests(int userId);
     Task<List<Friendship>> GetReceivedPendingFriendRequests(int userId);
+    Task LikeUserAchievement(int userId, int userAchievementId);
     Task AddFriend(int userId, int friendId);
     Task RemoveFriend(int userId, int friendId);
     Task AcceptFriendRequest(int userId, int friendId);
     Task DeclineFriendRequest(int userId, int friendId);
     Task<bool> IsFriend(int userId, int friendId);
 
-    Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
+    Task<FeedResultDto> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
         string? queryString = null);
 
     Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user);
@@ -82,9 +83,28 @@ public class UserService(
     public async Task<List<User>> GetFriends(int userId)
     {
         var user = await GetByIdWithInclude(userId);
-        return user.FriendsSent.Where(f => f.Status == FriendshipStatus.Accepted).Select(f => f.Friend)
-            .Union(user.FriendsRecieved.Where(f => f.Status == FriendshipStatus.Accepted).Select(f => f.User))
+        return user.FriendsSent.Where(f => f.Status == FriendshipStatus.Accepted && f.UserId == user.Id)
+            .Select(f => f.Friend)
+            .Union(user.FriendsRecieved.Where(f => f.Status == FriendshipStatus.Accepted && f.FriendId == user.Id)
+                .Select(f => f.User))
             .DistinctBy(u => u.Id).ToList();
+    }
+
+    public async Task LikeUserAchievement(int userId, int userAchievementId)
+    {
+        var userAchievement = await userAchievementService.GetByIdWithInclude(userAchievementId, true);
+        var user = await GetByIdWithInclude(userId);
+
+        if (!await IsFriend(user.Id, userAchievement.UserId))
+            throw new Exception("Csak a barátaid kitünteséeit likeolhatod!");
+
+        if (userAchievement.Likes.Any(like => like.UserId == user.Id))
+            userAchievement.Likes.RemoveAt(userAchievement.Likes.FindIndex(like => like.UserId == user.Id));
+        else
+            userAchievement.Likes.Add(new UserAchievementLike
+                { UserId = user.Id, UserAchievementId = userAchievementId });
+
+        await unitOfWork.SaveChangesAsync();
     }
 
     public override async Task<User> Update(User entity)
@@ -170,35 +190,6 @@ public class UserService(
                    f.FriendId == userId && f.UserId == friendId && f.Status == FriendshipStatus.Accepted);
     }
 
-    public async Task<List<UserAchievement>> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
-        string? queryString = null)
-    {
-        var friends = await GetFriends(userId);
-        var userAchievements = (await userAchievementService.GetAllByUserIds(friends.Select(f => f.Id).ToList()))
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(queryString))
-        {
-            var lowerCaseQuery = queryString.ToLower();
-            userAchievements = userAchievements.Where(u =>
-                u.User!.Username!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase) ||
-                u.Achievement!.Category!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        userAchievements = orderBy switch
-        {
-            FeedOrderBy.Trending or FeedOrderBy.DateDescending => //TODO likeok implementálása
-                userAchievements.OrderByDescending(u => u.CreatedAt),
-            FeedOrderBy.DateAscending => userAchievements.OrderBy(u => u.CreatedAt),
-            FeedOrderBy.AToZ => userAchievements.OrderBy(u => u.User!.Username),
-            FeedOrderBy.ZToA => userAchievements.OrderByDescending(u => u.User!.Username),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        return userAchievements.Skip((pagination.CurrentPage - 1) * pagination.PageSize).Take(pagination.PageSize)
-            .ToList();
-    }
-
     public async Task<User> UpdateUserProfile(int id, UpdateUserProfileDto user)
     {
         var userInDb = await GetById(id);
@@ -214,11 +205,18 @@ public class UserService(
         var friend = await GetByIdWithInclude(friendId);
         var userAchievements = await userAchievementService.GetAllByUserId(friend.Id);
 
-        return new PublicProfileDto
+        var publicProfile = new PublicProfileDto
         {
             User = mapper.Map<UserResultDto>(friend),
             UserAchievements = mapper.Map<List<UserAchievementWithAchievementDto>>(userAchievements)
         };
+
+        publicProfile.UserAchievements.ForEach(ua =>
+            ua.IsLikedByUser = userAchievements.FirstOrDefault(userAchievement => userAchievement.Id == ua.Id)
+                ?.Likes.Any(l => l.UserId == userId) ?? false
+        );
+
+        return publicProfile;
     }
 
     public async Task<List<User>> GetPossibleFriends(int userId)
@@ -233,6 +231,54 @@ public class UserService(
             )
             .AsNoTracking()
             .ToListAsync();
+    }
+
+    public async Task<FeedResultDto> GetFeed(int userId, PaginationDto pagination, FeedOrderBy orderBy,
+        string? queryString = null)
+    {
+        var friends = await GetFriends(userId);
+        var userAchievements = (await userAchievementService
+                .GetAllByUserIds(friends.Select(f => f.Id).ToList()))
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(queryString))
+        {
+            var lowerCaseQuery = queryString.ToLower();
+            userAchievements = userAchievements.Where(u =>
+                u.User!.Username!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase) ||
+                u.User!.DisplayName!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase) ||
+                u.Achievement!.Category!.Contains(lowerCaseQuery, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        userAchievements = orderBy switch
+        {
+            FeedOrderBy.Trending      => userAchievements.OrderByDescending(u => u.Likes.Count),
+            FeedOrderBy.DateDescending => userAchievements.OrderByDescending(u => u.CreatedAt),
+            FeedOrderBy.DateAscending  => userAchievements.OrderBy(u => u.CreatedAt),
+            FeedOrderBy.AToZ           => userAchievements.OrderBy(u => u.User!.Username),
+            FeedOrderBy.ZToA           => userAchievements.OrderByDescending(u => u.User!.Username),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        var totalCount = userAchievements.Count();
+
+        var pagedAchievements = userAchievements
+            .Skip((pagination.CurrentPage - 1) * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToList();
+
+        var result = mapper.Map<List<UserAchievementResultDto>>(pagedAchievements);
+
+        result.ForEach(ua =>
+            ua.IsLikedByUser = pagedAchievements
+                .FirstOrDefault(userAchievement => userAchievement.Id == ua.Id)?
+                .Likes.Any(l => l.UserId == userId) ?? false);
+
+        return new FeedResultDto
+        {
+            TotalCount = totalCount,
+            UserAchievements = result
+        };
     }
 
     private async Task<User> GetByIdWithInclude(int userId, bool track = false)

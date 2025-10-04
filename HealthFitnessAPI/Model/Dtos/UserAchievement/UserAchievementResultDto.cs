@@ -13,6 +13,8 @@ public class UserAchievementWithAchievementDto
     public AchievementPathOnlyResultDto Achievement { get; set; }
     public AchievementLevelResultDto AchievementLevel { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int TotalLikes { get; set; }
+    public bool IsLikedByUser { get; set; }
 }
 
 public class UserAchievementResultDto : UserAchievementWithAchievementDto

@@ -93,7 +93,7 @@ public class UserController(IUserService userService, IUserAchievementService us
         var userId = HttpContext.GetUserIdOrThrow();
         var result = await userService.GetFeed(userId, options.Pagination,
             EnumHelper.GetFeedOrderByEnumValue(options.FeedOrderBy), options.QueryString);
-        return Ok(mapper.Map<List<UserAchievement>>(result));
+        return Ok(result);
     }
 
     [Authorize(Roles = $"{Roles.User}, {Roles.Admin}")]
@@ -139,6 +139,22 @@ public class UserController(IUserService userService, IUserAchievementService us
             var userId = HttpContext.GetUserIdOrThrow();
             var result = await userAchievementService.GetAllByUserId(userId);
             return Ok(mapper.Map<List<UserAchievementResultDto>>(result));
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.User}")]
+    [HttpPost("like/{userAchievementId:int}")]
+    public async Task<IActionResult> Like(int userAchievementId)
+    {
+        try
+        {
+            var userId = HttpContext.GetUserIdOrThrow();
+            await userService.LikeUserAchievement(userId, userAchievementId);
+            return Ok();
         }
         catch (Exception e)
         {

@@ -12,4 +12,6 @@ public class UserAchievement : AbstractEntity
     public AchievementLevel? AchievementLevel { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public List<UserAchievementLike> Likes { get; set; }
 }
